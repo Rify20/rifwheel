@@ -63,10 +63,6 @@
 
 <body class="overflow-x-hidden">
 
-<audio id="sfx-spin" src="https://assets.mixkit.co/active_storage/sfx/2005/2005-preview.mp3" preload="auto"></audio>
-<audio id="sfx-win" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3" preload="auto"></audio>
-<audio id="sfx-click" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3" preload="auto"></audio>
-
 <header class="flex justify-between items-center px-12 py-12 max-w-7xl mx-auto">
     <h1 class="text-3xl font-[800] tracking-tighter text-blue-900">RifWheel<span class="text-blue-400">.</span></h1>
     
@@ -76,13 +72,12 @@
         <button onclick="switchTab('template')" id="nav-template" class="tab-btn text-xs font-black uppercase tracking-widest">Templat</button>
     </nav>
 
-    <a href="https://www.instagram.com/rifdev_/" target="_blank" onmouseenter="playSfx('click')" class="dev-profile px-8 py-3 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em]">
+    <a href="https://www.instagram.com/rifdev_/" target="_blank" class="dev-profile px-8 py-3 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em]">
         Developer
     </a>
 </header>
 
 <main class="max-w-7xl mx-auto px-12 pb-20">
-    
     <div id="view-wheel" class="grid lg:grid-cols-12 gap-20 items-center fade-in">
         <div class="lg:col-span-7 flex flex-col items-center">
             <div class="relative">
@@ -145,28 +140,6 @@ const canvas = document.getElementById('wheel');
 const ctx = canvas.getContext('2d');
 const input = document.getElementById('input');
 
-// Audio Cache
-const sfx = {
-    spin: document.getElementById('sfx-spin'),
-    win: document.getElementById('sfx-win'),
-    click: document.getElementById('sfx-click')
-};
-
-// Zero Delay Sound Function
-function playSfx(type) {
-    const sound = sfx[type];
-    if (sound) {
-        sound.pause();
-        sound.currentTime = 0;
-        sound.play().catch(e => console.log("Audio play blocked by browser"));
-    }
-}
-
-// Global Interaction Unlock
-document.body.addEventListener('click', () => {
-    Object.values(sfx).forEach(s => { s.play(); s.pause(); });
-}, { once: true });
-
 let names = [];
 let rotation = 0;
 let spinning = false;
@@ -206,13 +179,11 @@ function draw(){
 function spin(){
     if(spinning || names.length < 2) return;
     spinning = true;
-    playSfx('click');
     
     let start = rotation;
     let extra = Math.PI * 2 * (12 + Math.random() * 8);
     let duration = 5000;
     let startTime = performance.now();
-    let lastTick = 0;
 
     function anim(t){
         let p = (t - startTime) / duration;
@@ -220,12 +191,6 @@ function spin(){
         let ease = 1 - Math.pow(1 - p, 4); 
         rotation = start + extra * ease;
         
-        let currentTick = Math.floor(rotation / (Math.PI * 2 / names.length));
-        if(currentTick !== lastTick) {
-            playSfx('spin'); // No delay ticking
-            lastTick = currentTick;
-        }
-
         draw();
         if(p < 1) requestAnimationFrame(anim);
         else {
@@ -233,7 +198,6 @@ function spin(){
             let arc = 2 * Math.PI / names.length;
             let norm = (2 * Math.PI - (rotation % (2 * Math.PI))) % (2 * Math.PI);
             winnerIndex = Math.floor(norm / arc);
-            playSfx('win');
             showWinner(names[winnerIndex]);
         }
     }
@@ -241,7 +205,6 @@ function spin(){
 }
 
 function switchTab(tab) {
-    playSfx('click');
     ['wheel', 'history', 'template'].forEach(t => {
         document.getElementById('view-' + t).classList.add('hidden');
         document.getElementById('nav-' + t).classList.remove('tab-active');
@@ -271,7 +234,6 @@ function renderHistory() {
 }
 
 function saveAsTemplate() {
-    playSfx('click');
     const n = prompt("Nama Templat?");
     if(n) {
         templates.push({ n, d: input.value });
@@ -292,12 +254,12 @@ function renderTemplates() {
     `).join('') || '<p class="text-center text-slate-300 py-10 font-bold uppercase tracking-widest col-span-2">Belum ada templat</p>';
 }
 
-function loadT(i) { playSfx('click'); input.value = templates[i].d; draw(); switchTab('wheel'); }
-function deleteT(i) { playSfx('click'); templates.splice(i, 1); localStorage.setItem('rw_templates', JSON.stringify(templates)); renderTemplates(); }
-function closeModal() { playSfx('click'); document.getElementById('modal').classList.add('hidden'); }
-function removeWinner() { playSfx('click'); names.splice(winnerIndex, 1); input.value = names.join('\n'); closeModal(); draw(); }
-function shuffle() { playSfx('click'); let arr = input.value.split('\n').filter(x=>x.trim()); arr.sort(()=>Math.random()-0.5); input.value = arr.join('\n'); draw(); }
-function clearAll() { playSfx('click'); if(confirm("Hapus semua?")) { input.value = ""; draw(); } }
+function loadT(i) { input.value = templates[i].d; draw(); switchTab('wheel'); }
+function deleteT(i) { templates.splice(i, 1); localStorage.setItem('rw_templates', JSON.stringify(templates)); renderTemplates(); }
+function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+function removeWinner() { names.splice(winnerIndex, 1); input.value = names.join('\n'); closeModal(); draw(); }
+function shuffle() { let arr = input.value.split('\n').filter(x=>x.trim()); arr.sort(()=>Math.random()-0.5); input.value = arr.join('\n'); draw(); }
+function clearAll() { if(confirm("Hapus semua?")) { input.value = ""; draw(); } }
 
 input.addEventListener('input', draw);
 input.value = "RIFQI\nRIFDEV\nELITE\nMINIMAL\nCREATIVE";
