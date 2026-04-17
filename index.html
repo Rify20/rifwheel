@@ -3,75 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RifWheel by RifDev</title>
+    <title>RifWheel — Minimalist Picker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #ffffff; }
-        .main-container { height: calc(100vh - 70px); }
-        #wheel-container { position: relative; aspect-ratio: 1/1; width: 100%; max-width: 550px; }
+        :root { --primary: #2563eb; --bg: #ffffff; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #fcfdfe;
+            color: #1e293b;
+        }
         
-        /* Pointer Persis Wheel of Names */
-        #pointer {
-            position: absolute; right: -15px; top: 50%; transform: translateY(-50%);
-            width: 50px; height: 50px; z-index: 100;
-            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2));
+        /* Smooth Custom Scrollbar */
+        textarea::-webkit-scrollbar { width: 6px; }
+        textarea::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+        /* Elegant Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.5);
         }
 
-        .btn-spin {
-            background: #1d4ed8; color: white;
-            box-shadow: 0 4px 0 #1e3a8a; transition: all 0.1s;
+        /* Pointer Elegance */
+        #pointer-svg {
+            filter: drop-shadow(0 4px 10px rgba(37, 99, 235, 0.2));
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .btn-spin:active { transform: translateY(4px); box-shadow: 0 0 0 #1e3a8a; }
-        
-        /* Modal Style */
-        .modal-enter { animation: zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+
+        .spin-active #pointer-svg { transform: scale(1.2) rotate(-10deg); }
+
+        /* Button Hover Effect */
+        .btn-elegant {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-elegant:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.3); }
+
+        /* Canvas Smoothing */
+        canvas { image-rendering: antialiased; }
     </style>
 </head>
-<body class="overflow-hidden">
+<body class="min-h-screen flex flex-col">
 
-    <nav class="h-[60px] border-b flex items-center justify-between px-6 bg-white">
+    <nav class="py-6 px-10 flex justify-between items-center bg-white/50 sticky top-0 z-50">
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold">R</div>
-            <h1 class="text-xl font-bold text-gray-700">RifWheel <span class="text-blue-600">by RifDev</span></h1>
+            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-100">
+                <span class="text-white font-bold text-sm">R</span>
+            </div>
+            <h1 class="text-lg font-semibold tracking-tight text-slate-800">RifWheel <span class="text-slate-400 font-light">by RifDev</span></h1>
         </div>
-        <div class="flex gap-4">
-            <a href="https://www.instagram.com/rifdev_/" target="_blank" class="text-sm font-semibold text-blue-600 border border-blue-600 px-4 py-1.5 rounded-md hover:bg-blue-50 transition">Info Developer</a>
+        <div class="flex gap-6 items-center">
+            <a href="https://www.instagram.com/rifdev_/" target="_blank" class="text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors">Instagram</a>
         </div>
     </nav>
 
-    <div class="main-container flex flex-col md:flex-row w-full">
-        <div class="flex-[3] flex flex-col items-center justify-center bg-[#f8f9fa] p-4 relative">
-            <div id="wheel-container">
-                <img id="pointer" src="https://cdn-icons-png.flaticon.com/512/32/32213.png" alt="pointer">
-                <canvas id="wheelCanvas" width="800" height="800" class="w-full h-full"></canvas>
-                <button onclick="spin()" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-white rounded-full shadow-xl border-4 border-blue-600 z-50 font-bold text-blue-600 hover:scale-105 transition">PUTAR</button>
+    <main class="flex-1 flex flex-col lg:flex-row max-w-[1600px] mx-auto w-full p-6 lg:p-12 gap-12">
+        
+        <div class="w-full lg:w-[380px] order-2 lg:order-1">
+            <div class="glass p-8 rounded-[32px] shadow-sm flex flex-col h-full min-h-[500px]">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold tracking-tight mb-1">Daftar Entri</h2>
+                    <p class="text-slate-400 text-sm">Pisahkan nama dengan baris baru.</p>
+                </div>
+                
+                <textarea id="namesInput" spellcheck="false" class="flex-1 w-full bg-transparent border-none text-slate-700 text-lg leading-relaxed focus:ring-0 resize-none placeholder:text-slate-300" placeholder="Masukkan nama di sini..."></textarea>
+                
+                <div class="pt-6 border-t border-slate-100 flex justify-between items-center">
+                    <span id="countDisplay" class="text-xs font-bold uppercase tracking-widest text-slate-400">0 Nama</span>
+                    <button onclick="clearAll()" class="text-xs font-bold uppercase tracking-widest text-red-400 hover:text-red-600 transition-colors">Reset</button>
+                </div>
             </div>
         </div>
 
-        <div class="flex-1 border-l bg-white flex flex-col p-4 shadow-2xl">
-            <div class="flex justify-between items-center mb-2">
-                <span class="font-bold text-gray-600 uppercase text-xs tracking-wider">Entri Nama</span>
-                <span id="entryCount" class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">0 Nama</span>
-            </div>
-            <textarea id="namesInput" spellcheck="false" class="w-full flex-1 border rounded-md p-4 focus:ring-2 focus:ring-blue-500 outline-none text-lg leading-relaxed resize-none bg-gray-50 font-medium" placeholder="Masukkan nama..."></textarea>
-            <div class="grid grid-cols-2 gap-2 mt-3">
-                <button onclick="shuffleNames()" class="py-2 bg-gray-100 hover:bg-gray-200 rounded font-semibold text-sm">Acak Daftar</button>
-                <button onclick="clearAll()" class="py-2 bg-gray-100 hover:bg-gray-200 rounded font-semibold text-sm text-red-500">Hapus Semua</button>
+        <div class="flex-1 flex flex-col items-center justify-center order-1 lg:order-2">
+            <div class="relative w-full max-w-[650px]" id="wheel-wrapper">
+                <div class="absolute -right-4 top-1/2 -translate-y-1/2 z-40" id="pointer-svg">
+                    <svg width="50" height="50" viewBox="0 0 24 24" fill="none">
+                        <path d="M15 12L5 12M5 12L9 16M5 12L9 8" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+
+                <canvas id="wheelCanvas" width="800" height="800" class="w-full h-auto drop-shadow-[0_32px_64px_rgba(31,38,135,0.1)]"></canvas>
+                
+                <button onclick="spin()" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-white rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-slate-50 flex items-center justify-center z-50 group hover:scale-110 transition-transform active:scale-95">
+                    <div class="w-20 h-20 rounded-full border-2 border-blue-600 flex items-center justify-center text-blue-600 font-extrabold text-xs tracking-tighter">PUTAR</div>
+                </button>
             </div>
         </div>
-    </div>
+    </main>
 
-    <div id="winnerModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-        <div class="bg-white rounded-2xl p-8 max-w-sm w-full text-center relative z-10 modal-enter shadow-2xl">
-            <p class="text-gray-400 font-bold mb-2">PEMENANG!</p>
-            <h2 id="winnerName" class="text-4xl font-black text-blue-700 mb-8 break-words"></h2>
-            <div class="flex flex-col gap-2">
-                <button onclick="removeWinner()" class="bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-200">Hapus Nama Ini</button>
-                <button onclick="closeModal()" class="bg-gray-100 text-gray-600 py-3 rounded-xl font-bold hover:bg-gray-200">Tutup</button>
+    <div id="winnerModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-6">
+        <div class="absolute inset-0 bg-slate-900/10 backdrop-blur-xl"></div>
+        <div class="bg-white relative p-12 rounded-[40px] shadow-[0_40px_100px_rgba(0,0,0,0.1)] max-w-sm w-full text-center transform scale-100 transition-transform">
+            <div class="text-blue-600 font-bold tracking-widest text-[10px] uppercase mb-4 italic">Result</div>
+            <h2 id="winnerName" class="text-4xl font-extrabold text-slate-900 mb-10 break-words tracking-tight"></h2>
+            
+            <div class="space-y-3">
+                <button onclick="removeWinner()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold btn-elegant text-sm">Hapus & Lanjut</button>
+                <button onclick="closeModal()" class="w-full py-4 bg-slate-50 text-slate-600 rounded-2xl font-bold hover:bg-slate-100 transition-colors text-sm">Biarkan Saja</button>
             </div>
         </div>
     </div>
@@ -84,85 +114,87 @@
         let names = [];
         let currentRotation = 0;
         let isSpinning = false;
-        let lastWinnerIndex = -1;
+        let winnerIdx = -1;
 
-        // Sound Effects (Web Audio API)
+        // Sound Engine (Minimalist Click)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playTick() {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.1);
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
         }
 
-        const colors = ['#3369e8', '#d50f25', '#eeb211', '#009925', '#3369e8', '#d50f25'];
+        // Palette Minimalis (Biru-Putih-Slate)
+        const palette = ['#2563eb', '#ffffff', '#3b82f6', '#f8fafc', '#1d4ed8', '#f1f5f9'];
 
         function draw() {
             names = namesInput.value.split('\n').filter(n => n.trim() !== "");
-            document.getElementById('entryCount').innerText = `${names.length} Nama`;
-            localStorage.setItem('rifwheel_data', namesInput.value);
+            document.getElementById('countDisplay').innerText = `${names.length} Nama`;
+            localStorage.setItem('rifwheel_v3', namesInput.value);
 
             const arcSize = (2 * Math.PI) / (names.length || 1);
             ctx.clearRect(0, 0, 800, 800);
 
             if (names.length === 0) {
-                ctx.fillStyle = "#ddd";
-                ctx.beginPath();
-                ctx.arc(400, 400, 380, 0, 2 * Math.PI);
-                ctx.fill();
+                ctx.fillStyle = "#f1f5f9";
+                ctx.beginPath(); ctx.arc(400, 400, 380, 0, 2 * Math.PI); ctx.fill();
                 return;
             }
 
             names.forEach((name, i) => {
                 const angle = currentRotation + i * arcSize;
-                ctx.fillStyle = colors[i % colors.length];
+                
+                // Segments
+                ctx.fillStyle = palette[i % palette.length];
                 ctx.beginPath();
                 ctx.moveTo(400, 400);
                 ctx.arc(400, 400, 380, angle, angle + arcSize);
                 ctx.fill();
-                ctx.strokeStyle = "white";
-                ctx.lineWidth = 2;
-                ctx.stroke();
 
+                // Text
                 ctx.save();
                 ctx.translate(400, 400);
                 ctx.rotate(angle + arcSize / 2);
                 ctx.textAlign = "right";
-                ctx.fillStyle = "white";
-                ctx.font = `bold ${Math.max(12, 30 - names.length)}px Arial`;
-                ctx.fillText(name, 350, 10);
+                ctx.fillStyle = (i % palette.length) % 2 === 0 ? "#ffffff" : "#2563eb";
+                ctx.font = "600 22px 'Inter'";
+                ctx.fillText(name.substring(0, 18), 340, 8);
                 ctx.restore();
             });
+
+            // Clean Outer Ring
+            ctx.beginPath();
+            ctx.arc(400, 400, 380, 0, 2 * Math.PI);
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 10;
+            ctx.stroke();
         }
 
         function spin() {
             if (isSpinning || names.length < 2) return;
             isSpinning = true;
+            document.getElementById('wheel-wrapper').classList.add('spin-active');
             
-            const duration = 6000;
-            const extraRotation = (Math.random() * 10 + 15) * Math.PI * 2;
+            const duration = 7000;
+            const extraRotation = (Math.random() * 8 + 12) * Math.PI * 2;
             const startRotation = currentRotation;
             const startTime = performance.now();
-            let lastTickAngle = 0;
+            let lastTick = 0;
 
             function animate(time) {
                 const elapsed = time - startTime;
                 const progress = Math.min(elapsed / duration, 1);
-                const ease = 1 - Math.pow(1 - progress, 4);
+                const ease = 1 - Math.pow(1 - progress, 5); // Ultra Smooth Quintic Ease-Out
                 
                 currentRotation = startRotation + (extraRotation * ease);
                 
-                // Sound logic (tick setiap kali ngelewati segment)
                 const arcSize = (2 * Math.PI) / names.length;
-                if (Math.floor(currentRotation / arcSize) !== lastTickAngle) {
+                if (Math.floor(currentRotation / arcSize) !== lastTick) {
                     playTick();
-                    lastTickAngle = Math.floor(currentRotation / arcSize);
+                    lastTick = Math.floor(currentRotation / arcSize);
                 }
 
                 draw();
@@ -170,9 +202,10 @@
                 if (progress < 1) requestAnimationFrame(animate);
                 else {
                     isSpinning = false;
+                    document.getElementById('wheel-wrapper').classList.remove('spin-active');
                     const normalized = (2 * Math.PI - (currentRotation % (2 * Math.PI))) % (2 * Math.PI);
-                    lastWinnerIndex = Math.floor(normalized / arcSize);
-                    showWinner(names[lastWinnerIndex]);
+                    winnerIdx = Math.floor(normalized / arcSize);
+                    showWinner(names[winnerIdx]);
                 }
             }
             requestAnimationFrame(animate);
@@ -181,12 +214,17 @@
         function showWinner(name) {
             document.getElementById('winnerName').innerText = name;
             document.getElementById('winnerModal').classList.remove('hidden');
-            confetti({ particleCount: 200, spread: 90, origin: { y: 0.7 } });
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#2563eb', '#ffffff']
+            });
         }
 
         function removeWinner() {
-            if (lastWinnerIndex > -1) {
-                names.splice(lastWinnerIndex, 1);
+            if (winnerIdx > -1) {
+                names.splice(winnerIdx, 1);
                 namesInput.value = names.join('\n');
                 closeModal();
                 draw();
@@ -194,15 +232,9 @@
         }
 
         function closeModal() { document.getElementById('winnerModal').classList.add('hidden'); }
-        function clearAll() { if(confirm('Hapus semua?')) { namesInput.value = ""; draw(); } }
-        function shuffleNames() {
-            let arr = namesInput.value.split('\n').filter(n => n.trim() !== "");
-            arr.sort(() => Math.random() - 0.5);
-            namesInput.value = arr.join('\n');
-            draw();
-        }
+        function clearAll() { if(confirm('Hapus daftar?')) { namesInput.value = ""; draw(); } }
 
-        namesInput.value = localStorage.getItem('rifwheel_data') || "RifDev\nAndi\nSiti\nBudi\nDewi\nJoko\nLina\nRizky";
+        namesInput.value = localStorage.getItem('rifwheel_v3') || "RifDev\nElegant UI\nMinimalist\nClean Code\nModern Web";
         namesInput.addEventListener('input', draw);
         draw();
     </script>
