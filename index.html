@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RifWheel Ultra | Blue & White Elite</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,11 +15,12 @@
             background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
             min-height: 100vh;
             color: #1e3a8a;
+            -webkit-tap-highlight-color: transparent;
         }
         
         .soft-card {
             background: #ffffff;
-            border-radius: 50px;
+            border-radius: 40px;
             box-shadow: 0 30px 60px -15px rgba(37, 99, 235, 0.08);
         }
 
@@ -30,7 +31,9 @@
         }
 
         #wheel { 
-            filter: drop-shadow(0 40px 80px rgba(37, 99, 235, 0.15));
+            filter: drop-shadow(0 20px 40px rgba(37, 99, 235, 0.15));
+            max-width: 100%;
+            height: auto !important;
         }
 
         .btn-play {
@@ -40,6 +43,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            touch-action: manipulation;
         }
         .btn-play:active { transform: translate(-50%, -50%) scale(0.9); }
 
@@ -54,10 +58,20 @@
             background: #f8fbff !important;
             border: none !important;
             color: #1e40af !important;
+            font-size: 16px !important; /* Mencegah auto-zoom di iOS */
         }
         
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Penyesuaian khusus mobile */
+        @media (max-width: 640px) {
+            .soft-card { border-radius: 30px; padding: 2rem !important; }
+            header { padding: 2rem 1.5rem !important; flex-direction: column; gap: 1.5rem; }
+            nav { gap: 1.5rem !important; }
+            .btn-play { width: 5rem !important; height: 5rem !important; }
+            .btn-play span { font-size: 0.7rem !important; }
+        }
     </style>
 </head>
 
@@ -77,60 +91,60 @@
     </a>
 </header>
 
-<main class="max-w-7xl mx-auto px-12 pb-20">
-    <div id="view-wheel" class="grid lg:grid-cols-12 gap-20 items-center fade-in">
+<main class="max-w-7xl mx-auto px-6 md:px-12 pb-20">
+    <div id="view-wheel" class="grid lg:grid-cols-12 gap-10 lg:gap-20 items-center fade-in">
         <div class="lg:col-span-7 flex flex-col items-center">
-            <div class="relative">
-                <canvas id="wheel" width="560" height="560"></canvas>
+            <div class="relative w-full max-w-[560px]">
+                <canvas id="wheel" width="560" height="560" class="w-full"></canvas>
                 
-                <button onclick="spin()" class="btn-play absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full z-10">
+                <button onclick="spin()" class="btn-play absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 md:w-32 md:h-32 rounded-full z-10">
                     <span class="text-xs font-black text-blue-600 tracking-widest">SPIN</span>
                 </button>
 
-                <div class="absolute right-[-10px] top-1/2 -translate-y-1/2 w-14 h-14 bg-white shadow-xl rounded-full flex items-center justify-center z-20">
-                    <div class="w-0 h-0 border-t-[10px] border-t-transparent border-r-[20px] border-r-blue-500 border-b-[10px] border-b-transparent"></div>
+                <div class="absolute right-[-5px] top-1/2 -translate-y-1/2 w-10 h-10 md:w-14 md:h-14 bg-white shadow-xl rounded-full flex items-center justify-center z-20">
+                    <div class="w-0 h-0 border-t-[8px] md:border-t-[10px] border-t-transparent border-r-[16px] md:border-r-[20px] border-r-blue-500 border-b-[8px] md:border-b-[10px] border-b-transparent"></div>
                 </div>
             </div>
         </div>
 
-        <div class="lg:col-span-5">
-            <div class="soft-card p-12">
-                <div class="flex justify-between items-center mb-10">
+        <div class="lg:col-span-5 w-full">
+            <div class="soft-card p-10">
+                <div class="flex justify-between items-center mb-8">
                     <div>
-                        <h3 class="text-2xl font-black text-blue-900 tracking-tighter">Daftar Nama</h3>
+                        <h3 class="text-xl md:text-2xl font-black text-blue-900 tracking-tighter">Daftar Nama</h3>
                         <p id="count" class="text-[10px] font-bold text-blue-400 uppercase tracking-widest mt-1">Ready to spin</p>
                     </div>
-                    <div class="flex gap-3">
-                        <button onclick="saveAsTemplate()" class="p-4 bg-blue-50 text-blue-500 rounded-3xl hover:bg-blue-500 hover:text-white transition-all">
+                    <div class="flex gap-2">
+                        <button onclick="saveAsTemplate()" class="p-3 bg-blue-50 text-blue-500 rounded-2xl hover:bg-blue-500 hover:text-white transition-all">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                         </button>
-                        <button onclick="shuffle()" class="p-4 bg-slate-50 text-slate-400 rounded-3xl hover:bg-blue-100 hover:text-blue-500 transition-all">
+                        <button onclick="shuffle()" class="p-3 bg-slate-50 text-slate-400 rounded-2xl hover:bg-blue-100 hover:text-blue-500 transition-all">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                         </button>
                     </div>
                 </div>
-                <textarea id="input" class="w-full h-80 rounded-[40px] p-8 outline-none font-bold text-lg resize-none mb-6 shadow-inner" placeholder="Masukkan nama..."></textarea>
+                <textarea id="input" class="w-full h-64 md:h-80 rounded-[30px] p-6 outline-none font-bold text-lg resize-none mb-6 shadow-inner" placeholder="Masukkan nama..."></textarea>
                 <button onclick="clearAll()" class="w-full text-center text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] hover:text-red-400">Reset System</button>
             </div>
         </div>
     </div>
 
-    <div id="view-history" class="hidden max-w-2xl mx-auto py-10 fade-in">
-        <h3 class="text-4xl font-black text-blue-900 mb-10 tracking-tighter">Riwayat</h3>
-        <div id="history-list" class="grid gap-6"></div>
+    <div id="view-history" class="hidden max-w-2xl mx-auto py-10 fade-in px-4">
+        <h3 class="text-3xl md:text-4xl font-black text-blue-900 mb-8 tracking-tighter">Riwayat</h3>
+        <div id="history-list" class="grid gap-4 md:gap-6"></div>
     </div>
 
-    <div id="view-template" class="hidden max-w-2xl mx-auto py-10 fade-in">
-        <h3 class="text-4xl font-black text-blue-900 mb-10 tracking-tighter">Templat</h3>
-        <div id="template-list" class="grid sm:grid-cols-2 gap-6"></div>
+    <div id="view-template" class="hidden max-w-2xl mx-auto py-10 fade-in px-4">
+        <h3 class="text-3xl md:text-4xl font-black text-blue-900 mb-8 tracking-tighter">Templat</h3>
+        <div id="template-list" class="grid sm:grid-cols-2 gap-4 md:gap-6"></div>
     </div>
 </main>
 
 <div id="modal" class="hidden fixed inset-0 bg-blue-900/10 backdrop-blur-3xl z-[100] flex items-center justify-center p-6">
-    <div class="bg-white p-16 max-w-sm w-full rounded-[60px] text-center shadow-2xl scale-up-center">
-        <div class="text-[10px] font-black tracking-[0.4em] text-blue-400 mb-6 uppercase">The Winner Is</div>
-        <h2 id="winner" class="text-5xl font-black text-blue-900 mb-12 tracking-tight"></h2>
-        <button onclick="removeWinner()" class="w-full py-6 bg-blue-600 text-white rounded-[30px] font-black text-xs tracking-widest shadow-xl shadow-blue-200">HAPUS & LANJUT</button>
+    <div class="bg-white p-10 md:p-16 max-w-sm w-full rounded-[40px] md:rounded-[60px] text-center shadow-2xl scale-up-center">
+        <div class="text-[10px] font-black tracking-[0.4em] text-blue-400 mb-4 md:mb-6 uppercase">The Winner Is</div>
+        <h2 id="winner" class="text-3xl md:text-5xl font-black text-blue-900 mb-8 md:mb-12 tracking-tight break-words"></h2>
+        <button onclick="removeWinner()" class="w-full py-5 md:py-6 bg-blue-600 text-white rounded-[25px] md:rounded-[30px] font-black text-xs tracking-widest shadow-xl shadow-blue-200">HAPUS & LANJUT</button>
         <button onclick="closeModal()" class="mt-6 text-slate-300 font-bold text-[10px] uppercase tracking-widest">Tutup</button>
     </div>
 </div>
@@ -226,9 +240,9 @@ function showWinner(name) {
 function renderHistory() {
     const list = document.getElementById('history-list');
     list.innerHTML = history.map(h => `
-        <div class="soft-card p-8 flex justify-between items-center fade-in">
-            <span class="font-black text-xl text-blue-900">${h.name}</span>
-            <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">${h.time}</span>
+        <div class="soft-card p-6 md:p-8 flex justify-between items-center fade-in">
+            <span class="font-black text-lg md:text-xl text-blue-900">${h.name}</span>
+            <span class="text-[9px] md:text-[10px] font-bold text-slate-300 uppercase tracking-widest">${h.time}</span>
         </div>
     `).join('') || '<p class="text-center text-slate-300 py-10 font-bold uppercase tracking-widest">Kosong</p>';
 }
@@ -244,11 +258,11 @@ function saveAsTemplate() {
 function renderTemplates() {
     const list = document.getElementById('template-list');
     list.innerHTML = templates.map((t, i) => `
-        <div class="soft-card p-10 flex flex-col gap-6 fade-in">
-            <h4 class="font-black text-xl text-blue-900">${t.n}</h4>
+        <div class="soft-card p-8 md:p-10 flex flex-col gap-6 fade-in">
+            <h4 class="font-black text-lg md:text-xl text-blue-900">${t.n}</h4>
             <div class="flex gap-3">
-                <button onclick="loadT(${i})" class="flex-1 py-4 bg-blue-600 text-white text-[10px] font-black tracking-widest rounded-2xl">PAKAI</button>
-                <button onclick="deleteT(${i})" class="px-5 py-4 bg-red-50 text-red-400 rounded-2xl">DEL</button>
+                <button onclick="loadT(${i})" class="flex-1 py-3 md:py-4 bg-blue-600 text-white text-[10px] font-black tracking-widest rounded-2xl">PAKAI</button>
+                <button onclick="deleteT(${i})" class="px-4 py-3 md:py-4 bg-red-50 text-red-400 rounded-2xl">DEL</button>
             </div>
         </div>
     `).join('') || '<p class="text-center text-slate-300 py-10 font-bold uppercase tracking-widest col-span-2">Belum ada templat</p>';
@@ -262,7 +276,7 @@ function shuffle() { let arr = input.value.split('\n').filter(x=>x.trim()); arr.
 function clearAll() { if(confirm("Hapus semua?")) { input.value = ""; draw(); } }
 
 input.addEventListener('input', draw);
-input.value = "RIFKI BS\nFADIL ANNAFI\nAHMAS FAIZ RUHA\nAGUNG PRASTYO\nHARIS MAULANA";
+input.value = "RIFQI BS\nFADIL ANNAFI\nAHMAS FAIZ RUHA\nAGUNG PRASTYO\nHARIS MAULANA";
 draw();
 </script>
 
