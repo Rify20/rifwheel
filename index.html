@@ -3,266 +3,306 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RifWheel — Signature Edition</title>
+    <title>RifWheel Ultra | Blue & White Elite</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
     <style>
         body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #f8fafc; 
-            color: #0f172a;
-            -webkit-font-smoothing: antialiased;
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+            min-height: 100vh;
+            color: #1e3a8a;
         }
-
-        /* Soft Neumorphism & Glass */
-        .panel-elegant {
+        
+        .soft-card {
             background: #ffffff;
-            border: 1px solid #f1f5f9;
-            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.04);
+            border-radius: 50px;
+            box-shadow: 0 30px 60px -15px rgba(37, 99, 235, 0.08);
         }
 
-        /* Pointer Elegance */
-        #pointer-svg {
-            filter: drop-shadow(0 4px 12px rgba(37, 99, 235, 0.3));
-            transition: all 0.2s ease;
+        .dev-profile {
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.2);
+            transition: all 0.3s ease;
         }
 
-        /* Background Animated Gradient */
-        .bg-gradient-soft {
-            background: radial-gradient(circle at 0% 0%, #f1f5f9 0%, #ffffff 100%);
+        #wheel { 
+            filter: drop-shadow(0 40px 80px rgba(37, 99, 235, 0.15));
         }
 
-        /* Custom Input */
+        .btn-play {
+            background: #ffffff;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-play:active { transform: translate(-50%, -50%) scale(0.9); }
+
+        .tab-btn { transition: all 0.3s ease; position: relative; opacity: 0.4; }
+        .tab-active { opacity: 1; color: #2563eb; }
+        .tab-active::after {
+            content: ""; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
+            width: 20px; height: 4px; background: #3b82f6; border-radius: 10px;
+        }
+
         textarea {
-            background: transparent;
-            line-height: 1.8;
-            letter-spacing: 0.02em;
+            background: #f8fbff !important;
+            border: none !important;
+            color: #1e40af !important;
         }
-
-        /* Modal Overlay */
-        .modal-blur {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px) saturate(180%);
-        }
-
-        .btn-primary {
-            background: #2563eb;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .btn-primary:hover {
-            background: #1d4ed8;
-            box-shadow: 0 12px 24px -8px rgba(37, 99, 235, 0.5);
-            transform: translateY(-2px);
-        }
+        
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="min-h-screen bg-gradient-soft overflow-hidden">
 
-    <nav class="h-24 px-12 flex items-center justify-between z-50 relative">
-        <div class="flex items-center gap-4">
-            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-xl shadow-blue-100">
-                <span class="text-white font-black text-lg">R</span>
-            </div>
-            <div>
-                <h1 class="text-sm font-extrabold tracking-[0.2em] uppercase text-slate-900">RifWheel</h1>
-                <p class="text-[9px] font-bold text-blue-500 uppercase tracking-widest">Premium Picker</p>
-            </div>
-        </div>
-        <div class="flex items-center gap-8">
-            <a href="https://www.instagram.com/rifdev_/" target="_blank" class="text-[10px] font-bold tracking-widest uppercase text-slate-400 hover:text-blue-600 transition-colors">Instagram</a>
-            <div class="h-4 w-[1px] bg-slate-200"></div>
-            <button onclick="clearAll()" class="text-[10px] font-bold tracking-widest uppercase text-red-400">Reset</button>
-        </div>
+<body class="overflow-x-hidden">
+
+<audio id="sfx-spin" src="https://assets.mixkit.co/active_storage/sfx/2005/2005-preview.mp3" preload="auto"></audio>
+<audio id="sfx-win" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3" preload="auto"></audio>
+<audio id="sfx-click" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3" preload="auto"></audio>
+
+<header class="flex justify-between items-center px-12 py-12 max-w-7xl mx-auto">
+    <h1 class="text-3xl font-[800] tracking-tighter text-blue-900">RifWheel<span class="text-blue-400">.</span></h1>
+    
+    <nav class="flex gap-10">
+        <button onclick="switchTab('wheel')" id="nav-wheel" class="tab-btn tab-active text-xs font-black uppercase tracking-widest">Studio</button>
+        <button onclick="switchTab('history')" id="nav-history" class="tab-btn text-xs font-black uppercase tracking-widest">Riwayat</button>
+        <button onclick="switchTab('template')" id="nav-template" class="tab-btn text-xs font-black uppercase tracking-widest">Templat</button>
     </nav>
 
-    <main class="max-w-[1400px] mx-auto flex flex-col lg:flex-row h-[calc(100vh-96px)] items-center px-12 gap-16">
-        
-        <div class="flex-1 relative flex flex-col items-center">
-            <div class="relative w-full max-w-[600px]" id="wheel-frame">
-                <div class="absolute -right-4 top-1/2 -translate-y-1/2 z-40" id="pointer-svg">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-                        <path d="M19 12H5M5 12L11 18M5 12L11 6" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
+    <a href="https://www.instagram.com/rifdev_/" target="_blank" onmouseenter="playSfx('click')" class="dev-profile px-8 py-3 rounded-2xl text-white text-[10px] font-black uppercase tracking-[0.2em]">
+        Developer
+    </a>
+</header>
 
-                <canvas id="wheelCanvas" width="1000" height="1000" class="w-full h-auto"></canvas>
+<main class="max-w-7xl mx-auto px-12 pb-20">
+    
+    <div id="view-wheel" class="grid lg:grid-cols-12 gap-20 items-center fade-in">
+        <div class="lg:col-span-7 flex flex-col items-center">
+            <div class="relative">
+                <canvas id="wheel" width="560" height="560"></canvas>
                 
-                <button onclick="spin()" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-white rounded-full shadow-[0_20px_40px_rgba(0,0,0,0.08)] flex items-center justify-center z-50 group transition-transform hover:scale-110 active:scale-95">
-                    <div class="w-20 h-20 rounded-full border border-slate-100 flex items-center justify-center">
-                        <span class="text-[10px] font-black text-blue-600 tracking-tighter italic">SPIN</span>
-                    </div>
+                <button onclick="spin()" class="btn-play absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full z-10">
+                    <span class="text-xs font-black text-blue-600 tracking-widest">SPIN</span>
                 </button>
-            </div>
-        </div>
 
-        <div class="w-full lg:w-[450px] h-full py-12">
-            <div class="panel-elegant h-full rounded-[40px] p-10 flex flex-col relative overflow-hidden">
-                <div class="mb-8">
-                    <h3 class="text-xl font-bold tracking-tight text-slate-800">Daftar Nama</h3>
-                    <p class="text-xs font-medium text-slate-400 mt-1">Satu nama untuk setiap baris.</p>
-                </div>
-                
-                <textarea id="namesInput" spellcheck="false" 
-                    class="flex-1 w-full border-none outline-none text-lg font-medium text-slate-600 placeholder:text-slate-200 resize-none" 
-                    placeholder="Masukkan nama..."></textarea>
-                
-                <div class="mt-6 flex justify-between items-center">
-                    <div id="count" class="text-[10px] font-bold text-slate-400 tracking-widest uppercase bg-slate-50 px-3 py-1.5 rounded-lg">0 Entri</div>
-                    <button onclick="shuffleNames()" class="text-[10px] font-bold text-blue-600 tracking-widest uppercase hover:opacity-70">Acak Daftar</button>
+                <div class="absolute right-[-10px] top-1/2 -translate-y-1/2 w-14 h-14 bg-white shadow-xl rounded-full flex items-center justify-center z-20">
+                    <div class="w-0 h-0 border-t-[10px] border-t-transparent border-r-[20px] border-r-blue-500 border-b-[10px] border-b-transparent"></div>
                 </div>
             </div>
         </div>
-    </main>
 
-    <div id="winnerModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-6">
-        <div class="absolute inset-0 modal-blur"></div>
-        <div class="bg-white relative p-12 rounded-[50px] shadow-[0_50px_100px_rgba(0,0,0,0.1)] max-w-sm w-full text-center border border-white">
-            <div class="text-[10px] font-black tracking-[0.4em] text-blue-600 uppercase mb-6 opacity-40 italic">Result</div>
-            <h2 id="winnerName" class="text-4xl font-extrabold text-slate-900 mb-12 tracking-tight"></h2>
-            
-            <div class="flex flex-col gap-3">
-                <button onclick="removeWinner()" class="w-full py-5 btn-primary text-white rounded-[24px] font-bold text-xs tracking-widest">HAPUS NAMA</button>
-                <button onclick="closeModal()" class="w-full py-5 text-slate-400 font-bold text-xs tracking-widest hover:text-slate-600">LANJUTKAN</button>
+        <div class="lg:col-span-5">
+            <div class="soft-card p-12">
+                <div class="flex justify-between items-center mb-10">
+                    <div>
+                        <h3 class="text-2xl font-black text-blue-900 tracking-tighter">Daftar Nama</h3>
+                        <p id="count" class="text-[10px] font-bold text-blue-400 uppercase tracking-widest mt-1">Ready to spin</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="saveAsTemplate()" class="p-4 bg-blue-50 text-blue-500 rounded-3xl hover:bg-blue-500 hover:text-white transition-all">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        </button>
+                        <button onclick="shuffle()" class="p-4 bg-slate-50 text-slate-400 rounded-3xl hover:bg-blue-100 hover:text-blue-500 transition-all">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <textarea id="input" class="w-full h-80 rounded-[40px] p-8 outline-none font-bold text-lg resize-none mb-6 shadow-inner" placeholder="Masukkan nama..."></textarea>
+                <button onclick="clearAll()" class="w-full text-center text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] hover:text-red-400">Reset System</button>
             </div>
         </div>
     </div>
 
-    <script>
-        const canvas = document.getElementById('wheelCanvas');
-        const ctx = canvas.getContext('2d');
-        const namesInput = document.getElementById('namesInput');
+    <div id="view-history" class="hidden max-w-2xl mx-auto py-10 fade-in">
+        <h3 class="text-4xl font-black text-blue-900 mb-10 tracking-tighter">Riwayat</h3>
+        <div id="history-list" class="grid gap-6"></div>
+    </div>
+
+    <div id="view-template" class="hidden max-w-2xl mx-auto py-10 fade-in">
+        <h3 class="text-4xl font-black text-blue-900 mb-10 tracking-tighter">Templat</h3>
+        <div id="template-list" class="grid sm:grid-cols-2 gap-6"></div>
+    </div>
+</main>
+
+<div id="modal" class="hidden fixed inset-0 bg-blue-900/10 backdrop-blur-3xl z-[100] flex items-center justify-center p-6">
+    <div class="bg-white p-16 max-w-sm w-full rounded-[60px] text-center shadow-2xl scale-up-center">
+        <div class="text-[10px] font-black tracking-[0.4em] text-blue-400 mb-6 uppercase">The Winner Is</div>
+        <h2 id="winner" class="text-5xl font-black text-blue-900 mb-12 tracking-tight"></h2>
+        <button onclick="removeWinner()" class="w-full py-6 bg-blue-600 text-white rounded-[30px] font-black text-xs tracking-widest shadow-xl shadow-blue-200">HAPUS & LANJUT</button>
+        <button onclick="closeModal()" class="mt-6 text-slate-300 font-bold text-[10px] uppercase tracking-widest">Tutup</button>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById('wheel');
+const ctx = canvas.getContext('2d');
+const input = document.getElementById('input');
+
+// Audio Cache
+const sfx = {
+    spin: document.getElementById('sfx-spin'),
+    win: document.getElementById('sfx-win'),
+    click: document.getElementById('sfx-click')
+};
+
+// Zero Delay Sound Function
+function playSfx(type) {
+    const sound = sfx[type];
+    if (sound) {
+        sound.pause();
+        sound.currentTime = 0;
+        sound.play().catch(e => console.log("Audio play blocked by browser"));
+    }
+}
+
+// Global Interaction Unlock
+document.body.addEventListener('click', () => {
+    Object.values(sfx).forEach(s => { s.play(); s.pause(); });
+}, { once: true });
+
+let names = [];
+let rotation = 0;
+let spinning = false;
+let winnerIndex = -1;
+
+let history = JSON.parse(localStorage.getItem('rw_history')) || [];
+let templates = JSON.parse(localStorage.getItem('rw_templates')) || [];
+
+const colors = ["#3b82f6", "#60a5fa", "#93c5fd", "#2563eb", "#bfdbfe"];
+
+function draw(){
+    names = input.value.split('\n').filter(x=>x.trim());
+    document.getElementById('count').innerText = names.length + " items active";
+    ctx.clearRect(0,0,560,560);
+    if(names.length === 0) return;
+
+    let arc = 2 * Math.PI / names.length;
+    names.forEach((n, i) => {
+        let angle = rotation + i * arc;
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.beginPath();
+        ctx.moveTo(280, 280);
+        ctx.arc(280, 280, 275, angle, angle + arc);
+        ctx.fill();
+
+        ctx.save();
+        ctx.translate(280, 280);
+        ctx.rotate(angle + arc / 2);
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "right";
+        ctx.font = "800 16px 'Plus Jakarta Sans'";
+        ctx.fillText(n.toUpperCase(), 250, 6);
+        ctx.restore();
+    });
+}
+
+function spin(){
+    if(spinning || names.length < 2) return;
+    spinning = true;
+    playSfx('click');
+    
+    let start = rotation;
+    let extra = Math.PI * 2 * (12 + Math.random() * 8);
+    let duration = 5000;
+    let startTime = performance.now();
+    let lastTick = 0;
+
+    function anim(t){
+        let p = (t - startTime) / duration;
+        if(p > 1) p = 1;
+        let ease = 1 - Math.pow(1 - p, 4); 
+        rotation = start + extra * ease;
         
-        let names = [];
-        let currentRotation = 0;
-        let isSpinning = false;
-        let winnerIdx = -1;
-
-        // Sound System
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playTick() {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.frequency.setValueAtTime(1000, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.05);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+        let currentTick = Math.floor(rotation / (Math.PI * 2 / names.length));
+        if(currentTick !== lastTick) {
+            playSfx('spin'); // No delay ticking
+            lastTick = currentTick;
         }
 
-        // Palette: Gradient Blues (Analogous)
-        const palette = ['#1e40af', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#dbeafe'];
-
-        function draw() {
-            names = namesInput.value.split('\n').filter(n => n.trim() !== "");
-            document.getElementById('count').innerText = `${names.length} ENTRI`;
-            localStorage.setItem('rifwheel_signature', namesInput.value);
-
-            const arcSize = (2 * Math.PI) / (names.length || 1);
-            ctx.clearRect(0, 0, 1000, 1000);
-
-            if (names.length === 0) {
-                ctx.fillStyle = "#f8fafc";
-                ctx.beginPath(); ctx.arc(500, 500, 480, 0, 2 * Math.PI); ctx.fill();
-                return;
-            }
-
-            names.forEach((name, i) => {
-                const angle = currentRotation + i * arcSize;
-                
-                // Segment Color
-                ctx.fillStyle = palette[i % palette.length];
-                ctx.beginPath();
-                ctx.moveTo(500, 500);
-                ctx.arc(500, 500, 480, angle, angle + arcSize);
-                ctx.fill();
-
-                // Text
-                ctx.save();
-                ctx.translate(500, 500);
-                ctx.rotate(angle + arcSize / 2);
-                ctx.textAlign = "right";
-                ctx.fillStyle = (i % palette.length) > 3 ? "#1e40af" : "#ffffff";
-                ctx.font = "600 22px 'Inter'";
-                ctx.fillText(name.substring(0, 18), 440, 8);
-                ctx.restore();
-            });
-
-            // Outer ring elegant
-            ctx.beginPath();
-            ctx.arc(500, 500, 480, 0, 2 * Math.PI);
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 12;
-            ctx.stroke();
-        }
-
-        function spin() {
-            if (isSpinning || names.length < 2) return;
-            isSpinning = true;
-            
-            const duration = 7000;
-            const extraRotation = (Math.random() * 6 + 12) * Math.PI * 2;
-            const startRotation = currentRotation;
-            const startTime = performance.now();
-            let lastTick = 0;
-
-            function animate(time) {
-                const elapsed = time - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const ease = 1 - Math.pow(1 - progress, 5); // Smooth decelerating
-                
-                currentRotation = startRotation + (extraRotation * ease);
-                
-                const arcSize = (2 * Math.PI) / names.length;
-                if (Math.floor(currentRotation / (arcSize/2)) !== lastTick) {
-                    playTick();
-                    lastTick = Math.floor(currentRotation / (arcSize/2));
-                }
-
-                draw();
-
-                if (progress < 1) requestAnimationFrame(animate);
-                else {
-                    isSpinning = false;
-                    const normalized = (2 * Math.PI - (currentRotation % (2 * Math.PI))) % (2 * Math.PI);
-                    winnerIdx = Math.floor(normalized / arcSize);
-                    showWinner(names[winnerIdx]);
-                }
-            }
-            requestAnimationFrame(animate);
-        }
-
-        function showWinner(name) {
-            document.getElementById('winnerName').innerText = name;
-            document.getElementById('winnerModal').classList.remove('hidden');
-            confetti({
-                particleCount: 150,
-                spread: 70,
-                origin: { y: 0.6 },
-                colors: ['#2563eb', '#ffffff', '#60a5fa']
-            });
-        }
-
-        function removeWinner() {
-            if (winnerIdx > -1) {
-                names.splice(winnerIdx, 1);
-                namesInput.value = names.join('\n');
-                closeModal();
-                draw();
-            }
-        }
-
-        function closeModal() { document.getElementById('winnerModal').classList.add('hidden'); }
-        function shuffleNames() {
-            let arr = namesInput.value.split('\n').filter(n => n.trim() !== "");
-            arr.sort(() => Math.random() - 0.5);
-            namesInput.value = arr.join('\n');
-            draw();
-        }
-        function clearAll() { if(confirm('Reset semua?')) { namesInput.value = ""; draw(); } }
-
-        namesInput.value = localStorage.getItem('rifwheel_signature') || "Muhammad Rifqi\nStrategy Design\nBrand Identity\nDevelopment\nInterface Design";
-        namesInput.addEventListener('input', draw);
         draw();
-    </script>
+        if(p < 1) requestAnimationFrame(anim);
+        else {
+            spinning = false;
+            let arc = 2 * Math.PI / names.length;
+            let norm = (2 * Math.PI - (rotation % (2 * Math.PI))) % (2 * Math.PI);
+            winnerIndex = Math.floor(norm / arc);
+            playSfx('win');
+            showWinner(names[winnerIndex]);
+        }
+    }
+    requestAnimationFrame(anim);
+}
+
+function switchTab(tab) {
+    playSfx('click');
+    ['wheel', 'history', 'template'].forEach(t => {
+        document.getElementById('view-' + t).classList.add('hidden');
+        document.getElementById('nav-' + t).classList.remove('tab-active');
+    });
+    document.getElementById('view-' + tab).classList.remove('hidden');
+    document.getElementById('nav-' + tab).classList.add('tab-active');
+    if(tab === 'history') renderHistory();
+    if(tab === 'template') renderTemplates();
+}
+
+function showWinner(name) {
+    document.getElementById('winner').innerText = name;
+    document.getElementById('modal').classList.remove('hidden');
+    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#3b82f6', '#ffffff'] });
+    history.unshift({ name, time: new Date().toLocaleTimeString() });
+    localStorage.setItem('rw_history', JSON.stringify(history));
+}
+
+function renderHistory() {
+    const list = document.getElementById('history-list');
+    list.innerHTML = history.map(h => `
+        <div class="soft-card p-8 flex justify-between items-center fade-in">
+            <span class="font-black text-xl text-blue-900">${h.name}</span>
+            <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">${h.time}</span>
+        </div>
+    `).join('') || '<p class="text-center text-slate-300 py-10 font-bold uppercase tracking-widest">Kosong</p>';
+}
+
+function saveAsTemplate() {
+    playSfx('click');
+    const n = prompt("Nama Templat?");
+    if(n) {
+        templates.push({ n, d: input.value });
+        localStorage.setItem('rw_templates', JSON.stringify(templates));
+    }
+}
+
+function renderTemplates() {
+    const list = document.getElementById('template-list');
+    list.innerHTML = templates.map((t, i) => `
+        <div class="soft-card p-10 flex flex-col gap-6 fade-in">
+            <h4 class="font-black text-xl text-blue-900">${t.n}</h4>
+            <div class="flex gap-3">
+                <button onclick="loadT(${i})" class="flex-1 py-4 bg-blue-600 text-white text-[10px] font-black tracking-widest rounded-2xl">PAKAI</button>
+                <button onclick="deleteT(${i})" class="px-5 py-4 bg-red-50 text-red-400 rounded-2xl">DEL</button>
+            </div>
+        </div>
+    `).join('') || '<p class="text-center text-slate-300 py-10 font-bold uppercase tracking-widest col-span-2">Belum ada templat</p>';
+}
+
+function loadT(i) { playSfx('click'); input.value = templates[i].d; draw(); switchTab('wheel'); }
+function deleteT(i) { playSfx('click'); templates.splice(i, 1); localStorage.setItem('rw_templates', JSON.stringify(templates)); renderTemplates(); }
+function closeModal() { playSfx('click'); document.getElementById('modal').classList.add('hidden'); }
+function removeWinner() { playSfx('click'); names.splice(winnerIndex, 1); input.value = names.join('\n'); closeModal(); draw(); }
+function shuffle() { playSfx('click'); let arr = input.value.split('\n').filter(x=>x.trim()); arr.sort(()=>Math.random()-0.5); input.value = arr.join('\n'); draw(); }
+function clearAll() { playSfx('click'); if(confirm("Hapus semua?")) { input.value = ""; draw(); } }
+
+input.addEventListener('input', draw);
+input.value = "RIFQI\nRIFDEV\nELITE\nMINIMAL\nCREATIVE";
+draw();
+</script>
+
 </body>
 </html>
